@@ -18,6 +18,7 @@ include(TestBigEndian)
 llvm_check_compiler_linker_flag(C "--unwindlib=none" CXX_SUPPORTS_UNWINDLIB_NONE_FLAG)
 
 check_library_exists(c fopen "" COMPILER_RT_HAS_LIBC)
+check_library_exists(execinfo backtrace "" COMPILER_RT_HAS_EXECINFO)
 if (COMPILER_RT_USE_BUILTINS_LIBRARY)
   include(HandleCompilerRT)
   find_compiler_rt_library(builtins COMPILER_RT_BUILTINS_LIBRARY
