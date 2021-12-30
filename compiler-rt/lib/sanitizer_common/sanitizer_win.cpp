@@ -951,12 +951,17 @@ void SignalContext::InitPcSpBp() {
 
   pc = (uptr)exception_record->ExceptionAddress;
 #ifdef _WIN64
+#    ifdef __aarch64__
+  bp = (uptr)context_record->Lr;
+  sp = (uptr)context_record->Sp;
+#    else
   bp = (uptr)context_record->Rbp;
   sp = (uptr)context_record->Rsp;
+#    endif
 #else
   bp = (uptr)context_record->Ebp;
   sp = (uptr)context_record->Esp;
-#endif
+#  endif
 }
 
 uptr SignalContext::GetAddress() const {
