@@ -91,6 +91,11 @@ function(tablegen project ofn)
   # ("${${project}_TABLEGEN_TARGET}" STREQUAL "${${project}_TABLEGEN_EXE}")
   # but lets us having smaller and cleaner code here.
   get_directory_property(tblgen_includes INCLUDE_DIRECTORIES)
+  if ( WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_GENERATOR STREQUAL "Ninja" )
+    # No support for generator-expressions in add_custom_command, so strip them
+    list(TRANSFORM tblgen_includes GENEX_STRIP)
+  endif()
+
   list(TRANSFORM tblgen_includes PREPEND -I)
 
   set(tablegen_exe ${${project}_TABLEGEN_EXE})

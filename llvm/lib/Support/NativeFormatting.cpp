@@ -14,6 +14,8 @@
 #include "llvm/Support/MathExtras.h"
 #include "llvm/Support/raw_ostream.h"
 
+#include <float.h>
+
 using namespace llvm;
 
 template<typename T, std::size_t N>
