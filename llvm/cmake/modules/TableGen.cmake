@@ -95,6 +95,11 @@ function(tablegen project ofn)
   list(APPEND tblgen_includes ${ARG_EXTRA_INCLUDES})
   # Filter out empty items before prepending each entry with -I
   list(REMOVE_ITEM tblgen_includes "")
+
+  if ( WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_GENERATOR STREQUAL "Ninja" )
+    # No support for generator-expressions in add_custom_command, so strip them
+    list(TRANSFORM tblgen_includes GENEX_STRIP)
+  endif()
   list(TRANSFORM tblgen_includes PREPEND -I)
 
   set(tablegen_exe ${${project}_TABLEGEN_EXE})
