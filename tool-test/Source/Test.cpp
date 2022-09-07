@@ -30,7 +30,7 @@ public:
 
     bool VisitFunctionDecl( clang::FunctionDecl * funcDecl )
     {
-        if ( funcDecl->getName() == "maxArray" )
+        if ( funcDecl->getIdentifier() != nullptr && funcDecl->getName() == "maxArray" )
         {
             interestingFunction_ = true;
         }
