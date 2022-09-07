@@ -20,6 +20,9 @@
 # vim swap files
 .*.sw?
 .sw?
+.vimrc
+.vimspector.json
+Session.vim
 #OS X specific files.
 .DS_store
 

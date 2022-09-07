@@ -190,6 +190,31 @@ if (APPLE AND LLVM_USE_SANITIZER)
   endif()
 endif()
 
+if (LIBCXX_ENABLE_PARALLEL_ALGORITHMS AND NOT TARGET pstl::ParallelSTL)
+  message(FATAL_ERROR "Could not find ParallelSTL")
+endif()
+
+function(cxx_set_common_defines name)
+  if (LIBCXX_ENABLE_PARALLEL_ALGORITHMS)
+    target_link_libraries(${name} PUBLIC pstl::ParallelSTL)
+  endif()
+endfunction()
+
+if (NOT APPLE AND NOT WIN32 AND LIBCXX_ENABLE_SHARED AND LIBCXXABI_USE_LLVM_UNWINDER AND
+        NOT LIBCXXABI_STATICALLY_LINK_UNWINDER_IN_SHARED_LIBRARY AND (TARGET unwind_shared OR HAVE_LIBUNWIND))
+    add_library_flags("-Wl,-rpath,'$$ORIGIN'")
+endif()
+
+if (LIBCXX_ENABLE_PARALLEL_ALGORITHMS AND NOT TARGET pstl::ParallelSTL)
+  message(FATAL_ERROR "Could not find ParallelSTL")
+endif()
+
+function(cxx_set_common_defines name)
+  if (LIBCXX_ENABLE_PARALLEL_ALGORITHMS)
+    target_link_libraries(${name} PUBLIC pstl::ParallelSTL)
+  endif()
+endfunction()
+
 split_list(LIBCXX_COMPILE_FLAGS)
 split_list(LIBCXX_LINK_FLAGS)
 
