@@ -892,6 +892,8 @@ void APValue::printPretty(raw_ostream &Out, const PrintingPolicy &Policy,
         assert(BI != CD->bases_end());
         if (!First)
           Out << ", ";
+        if (Policy.AlwaysIncludeTypeForNonTypeTemplateArgument)
+            BI->getType().getUnqualifiedType().print(Out, Policy);
         getStructBase(I).printPretty(Out, Policy, BI->getType(), Ctx);
         First = false;
       }

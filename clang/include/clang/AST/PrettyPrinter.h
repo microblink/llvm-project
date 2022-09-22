@@ -75,7 +75,7 @@ struct PrintingPolicy {
         PrintCanonicalTypes(false), PrintInjectedClassNameWithArguments(true),
         UsePreferredNames(true), AlwaysIncludeTypeForTemplateArgument(false),
         CleanUglifiedParameters(false), EntireContentsOfLargeArray(true),
-        UseEnumerators(true) {}
+        UseEnumerators(true), AlwaysIncludeTypeForNonTypeTemplateArgument(false) {}
 
   /// Adjust this printing policy for cases where it's known that we're
   /// printing C++ code (for instance, if AST dumping reaches a C++-only
@@ -294,6 +294,18 @@ struct PrintingPolicy {
   /// Whether to print enumerator non-type template parameters with a matching
   /// enumerator name or via cast of an integer.
   unsigned UseEnumerators : 1;
+
+  /// Whether to print full type names of non-type template arguments.
+  ///
+  /// \code
+  /// struct Point { int x, y; };
+  /// template< Point p > struct S {};
+  /// S< Point{ 1, 2 } > s;
+  /// \endcode
+  ///
+  /// decltype(s) will be printed as "S<Point{1,2}>" if enabled and as "S<{1,2}>" if disabled,
+  /// regardless if PrintCanonicalTypes is enabled.
+  unsigned AlwaysIncludeTypeForNonTypeTemplateArgument : 1;
 
   /// Callbacks to use to allow the behavior of printing to be customized.
   const PrintingCallbacks *Callbacks = nullptr;

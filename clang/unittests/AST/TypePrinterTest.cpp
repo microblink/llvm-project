@@ -48,7 +48,7 @@ TEST(TypePrinter, TemplateId) {
   std::string Code = R"cpp(
     namespace N {
       template <typename> struct Type {};
-      
+
       template <typename T>
       void Foo(const Type<T> &Param);
     }
@@ -125,5 +125,88 @@ TEST(TypePrinter, TemplateIdWithNTTP) {
       R"(ASCII<{"this nontype template argument is too long to print"}> &&)",
       [](PrintingPolicy &Policy) {
         Policy.EntireContentsOfLargeArray = true;
+      }));
+}
+
+TEST(TypePrinter, TemplateIdWithFullTypeNTTP) {
+  constexpr char Code[] = R"cpp(
+    enum struct Encoding { UTF8, ASCII };
+    template <int N, Encoding E = Encoding::ASCII>
+    struct Str {
+      constexpr Str(char const (&s)[N]) { __builtin_memcpy(value, s, N); }
+      char value[N];
+    };
+    template <Str> class ASCII {};
+
+    ASCII<"some string"> x;
+  )cpp";
+  auto Matcher = classTemplateSpecializationDecl(
+      hasName("ASCII"), has(cxxConstructorDecl(
+                            isMoveConstructor(),
+                            has(parmVarDecl(hasType(qualType().bind("id")))))));
+
+  ASSERT_TRUE(PrintedTypeMatches(
+      Code, {"-std=c++20"}, Matcher,
+      R"(ASCII<Str<12, Encoding::ASCII>{"some string"}> &&)",
+      [](PrintingPolicy &Policy) {
+        Policy.AlwaysIncludeTypeForNonTypeTemplateArgument = true;
+      }));
+
+  ASSERT_TRUE(PrintedTypeMatches(
+      Code, {"-std=c++20"}, Matcher, R"(ASCII<{"some string"}> &&)",
+      [](PrintingPolicy &Policy) {
+        Policy.AlwaysIncludeTypeForNonTypeTemplateArgument = false;
+      }));
+}
+
+TEST(TypePrinter, TemplateIdWithComplexFullTypeNTTP) {
+  constexpr char Code[] = R"cpp(
+  template< typename T, auto ... dims >
+  struct NDArray {};
+
+  struct Dimension
+  {
+      using value_type = unsigned short;
+
+      value_type size{ value_type( 0 ) };
+  };
+
+  template < typename ConcreteDim >
+  struct DimensionImpl : Dimension {};
+
+  struct Width    : DimensionImpl< Width    > {};
+  struct Height   : DimensionImpl< Height   > {};
+  struct Channels : DimensionImpl< Channels > {};
+
+  inline constexpr Width    W;
+  inline constexpr Height   H;
+  inline constexpr Channels C;
+
+  template< auto ... Dims >
+  consteval auto makeArray() noexcept
+  {
+      return NDArray< float, Dims ... >{};
+  }
+
+  [[ maybe_unused ]] auto x { makeArray< H, W, C >() };
+
+  )cpp";
+  auto Matcher = varDecl(
+      allOf(hasAttr(attr::Kind::Unused), hasType(qualType().bind("id"))));
+
+  ASSERT_TRUE(PrintedTypeMatches(
+      Code, {"-std=c++20"}, Matcher,
+      R"(NDArray<float, {{{0}}}, {{{0}}}, {{{0}}}>)",
+      [](PrintingPolicy &Policy) {
+        Policy.PrintCanonicalTypes = true;
+        Policy.AlwaysIncludeTypeForNonTypeTemplateArgument = false;
+      }));
+
+  ASSERT_TRUE(PrintedTypeMatches(
+      Code, {"-std=c++20"}, Matcher,
+      R"(NDArray<float, Height{DimensionImpl<Height>{Dimension{0}}}, Width{DimensionImpl<Width>{Dimension{0}}}, Channels{DimensionImpl<Channels>{Dimension{0}}}>)",
+      [](PrintingPolicy &Policy) {
+        Policy.PrintCanonicalTypes = true;
+        Policy.AlwaysIncludeTypeForNonTypeTemplateArgument = true;
       }));
 }
