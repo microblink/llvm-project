@@ -24,7 +24,7 @@ endmacro()
 # different compilers, and they build more quickly."
 
 if (CAN_USE_ASSEMBLER)
-  if (MSVC)
+    if (MSVC AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     check_symbol_exists(_M_X64 "" IS_X64)
     if (IS_X64)
       enable_language(ASM_MASM)

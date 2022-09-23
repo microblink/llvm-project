@@ -139,10 +139,15 @@ struct StructInfo {
   FieldInfo &addField(StringRef FieldName, FieldType FT,
                       unsigned FieldAlignmentSize);
 
-  StructInfo() = default;
+  StructInfo();
+ ~StructInfo();
+  StructInfo(const StructInfo&);
+  StructInfo(StructInfo&&);
 
-  StructInfo(StringRef StructName, bool Union, unsigned AlignmentValue)
-      : Name(StructName), IsUnion(Union), Alignment(AlignmentValue) {}
+  StructInfo& operator=(const StructInfo&);
+  StructInfo& operator=(StructInfo&&);
+
+  StructInfo(StringRef StructName, bool Union, unsigned AlignmentValue);
 };
 
 // FIXME: This should probably use a class hierarchy, raw pointers between the
@@ -169,15 +174,15 @@ struct StructFieldInfo {
   std::vector<StructInitializer> Initializers;
   StructInfo Structure;
 
-  StructFieldInfo() = default;
-  StructFieldInfo(const std::vector<StructInitializer> &V, StructInfo S) {
-    Initializers = V;
-    Structure = S;
-  }
-  StructFieldInfo(std::vector<StructInitializer> &&V, StructInfo S) {
-    Initializers = V;
-    Structure = S;
-  }
+  StructFieldInfo();
+  ~StructFieldInfo();
+  StructFieldInfo(const StructFieldInfo&);
+  StructFieldInfo(StructFieldInfo&&);
+  StructFieldInfo& operator=(const StructFieldInfo&);
+  StructFieldInfo& operator=(StructFieldInfo&&);
+
+  StructFieldInfo(const std::vector<StructInitializer> &V, StructInfo S);
+  StructFieldInfo(std::vector<StructInitializer> &&V, StructInfo S);
 };
 
 class FieldInitializer {
@@ -339,6 +344,36 @@ struct FieldInfo {
 
   FieldInfo(FieldType FT) : Contents(FT) {}
 };
+
+StructInfo::StructInfo() = default;
+StructInfo::~StructInfo() = default;
+StructInfo::StructInfo(const StructInfo&) = default;
+StructInfo::StructInfo(StructInfo&&) = default;
+
+StructInfo& StructInfo::operator=(const StructInfo&) = default;
+StructInfo& StructInfo::operator=(StructInfo&&) = default;
+
+StructInfo::StructInfo(StringRef StructName, bool Union, unsigned AlignmentValue)
+      : Name(StructName), IsUnion(Union), Alignment(AlignmentValue) {}
+
+StructFieldInfo::StructFieldInfo() = default;
+StructFieldInfo::~StructFieldInfo() = default;
+
+StructFieldInfo::StructFieldInfo(const StructFieldInfo&) = default;
+StructFieldInfo::StructFieldInfo(StructFieldInfo&&) = default;
+
+StructFieldInfo& StructFieldInfo::operator=(const StructFieldInfo&) = default;
+StructFieldInfo& StructFieldInfo::operator=(StructFieldInfo&&) = default;
+
+StructFieldInfo::StructFieldInfo(const std::vector<StructInitializer> &V, StructInfo S) {
+  Initializers = V;
+  Structure = S;
+}
+
+StructFieldInfo::StructFieldInfo(std::vector<StructInitializer> &&V, StructInfo S) {
+  Initializers = V;
+  Structure = S;
+}
 
 FieldInfo &StructInfo::addField(StringRef FieldName, FieldType FT,
                                 unsigned FieldAlignmentSize) {
